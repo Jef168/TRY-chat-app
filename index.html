@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#10131b">
+<meta name="description" content="TRY 开放式聊天 · 云端好友与实时消息">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TRY">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<title>TRY 1.0 · 开放式聊天</title>
+<style>
+:root{color-scheme:dark;--bg:#10131b;--panel:#191e29;--panel2:#202736;--line:#30394a;--text:#f4f6fb;--muted:#9ca8bb;--accent:#7c6cff;--green:#35c98a;--danger:#ff6b79}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px system-ui,-apple-system,"Segoe UI",sans-serif}
+button,input{font:inherit}button{border:0;border-radius:12px;padding:11px 14px;background:var(--accent);color:white;font-weight:650;cursor:pointer}button.secondary{background:var(--panel2);border:1px solid var(--line)}button.danger{background:#512832}button:disabled{opacity:.5}
+.wrap{max-width:900px;margin:auto;min-height:100dvh;padding:18px 14px 36px}.brand{display:flex;align-items:center;gap:10px;margin:8px 0 22px}.logo{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,#8877ff,#4b40c9);display:grid;place-items:center;font-weight:900;font-size:22px}.brand h1{font-size:21px;margin:0}.brand small{display:block;color:var(--muted);font-size:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:14px}.auth{max-width:430px;margin:7vh auto}.muted{color:var(--muted)}.hint{font-size:12px;color:var(--muted);line-height:1.5}.field{display:block;margin:13px 0}.field span{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}.field input{width:100%;padding:13px;border-radius:11px;background:#0e121a;color:var(--text);border:1px solid var(--line);outline:none}.field input:focus{border-color:var(--accent)}.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.row>*{min-width:0}.grow{flex:1}.tabs{display:flex;gap:7px;margin-bottom:13px}.tabs button{flex:1}.tabs .active{background:var(--accent)}.hidden{display:none!important}
+.topline{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}.topline h2{margin:0;font-size:18px}.grid{display:grid;grid-template-columns:260px 1fr;gap:14px}.list{display:flex;flex-direction:column;gap:7px;margin-top:10px}.item{width:100%;text-align:left;background:var(--panel2);border:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:8px}.item.selected{border-color:var(--accent)}.item small{display:block;color:var(--muted);font-weight:400}.pill{font-size:11px;color:#bcb4ff;background:#302b58;padding:3px 7px;border-radius:20px}
+.messages{height:48vh;min-height:300px;overflow:auto;display:flex;flex-direction:column;gap:8px;padding:10px 2px}.bubble{max-width:82%;padding:10px 12px;border-radius:14px;background:var(--panel2);align-self:flex-start;overflow-wrap:anywhere}.bubble.mine{background:#403a83;align-self:flex-end}.bubble .recall{display:block;margin-top:7px;padding:3px 8px;font-size:11px;border:1px solid #777;border-radius:7px;background:transparent;color:#ddd}.bubble time{display:block;color:#c0c3d2;font-size:10px;margin-top:4px}.sendrow{display:flex;gap:8px}.sendrow input{flex:1;min-width:0;padding:12px;border:1px solid var(--line);border-radius:12px;background:#0e121a;color:white}
+.receipt{display:block;text-align:right;color:#d9d2ff;font-size:10px;margin-top:2px}.unread{font-size:10px;background:#35a879;color:#071b13;border-radius:20px;padding:3px 7px;margin-left:5px}.friendrow{display:flex;gap:6px;align-items:stretch}.friendrow>.item{flex:1}.friendrow .removeFriend{padding:7px 9px;font-size:11px}.notice{padding:10px 12px;border-radius:11px;background:#222b3a;color:#cbd5e5;margin:10px 0;font-size:13px}.notice.error{background:#3c222b;color:#ffc0c7}.notice.ok{background:#17382d;color:#b8f4d8}
+@media(max-width:680px){.grid{grid-template-columns:1fr}.messages{height:42vh}.auth{margin:3vh auto}.card{padding:15px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="brand"><div class="logo">T</div><div style="flex:1"><h1>TRY</h1><small>开放式聊天 · 云端版</small></div><button id="installBtn" class="secondary hidden" type="button" style="padding:8px 10px;font-size:12px">安装 TRY</button></header>
+  <section id="authView" class="card auth">
+    <h2 style="margin:0 0 5px">欢迎来到 TRY</h2><p class="muted" style="margin-top:0">使用用户名和密码继续</p>
+    <div class="tabs"><button id="loginTab" class="active">登录</button><button id="registerTab" class="secondary">注册</button></div>
+    <form id="authForm">
+      <label class="field"><span>用户名（3–24 位，小写字母/数字/下划线）</span><input id="username" autocomplete="username" minlength="3" maxlength="24" pattern="[a-zA-Z0-9_]{3,24}" required></label>
+      <label id="displayField" class="field hidden"><span>显示名称（可选）</span><input id="displayName" maxlength="60" autocomplete="nickname"></label>
+      <label class="field"><span>密码（至少 10 位）</span><input id="password" type="password" minlength="10" autocomplete="current-password" required></label>
+      <button id="authSubmit" style="width:100%" type="submit">登录</button>
+    </form>
+    <div id="authMsg" class="notice hidden"></div>
+    <p class="hint">原型说明：用户名通过内部虚拟邮箱映射到 Supabase Auth。该邮箱不能收信，因此目前不支持邮件找回密码。请勿使用重要网站的相同密码。</p>
+  </section>
+
+  <main id="appView" class="hidden">
+    <div class="topline"><div><h2 id="welcome">你好</h2><div class="muted" id="myHandle"></div></div><button class="secondary" id="logoutBtn">退出登录</button></div>
+    <div class="grid">
+      <aside>
+        <section class="card">
+          <h2 style="font-size:16px;margin:0 0 8px">我的资料与安全</h2>
+          <form id="profileForm">
+            <label class="field"><span>显示名称</span><input id="profileDisplayName" maxlength="60"></label>
+            <label class="field"><span>个人简介</span><input id="profileBio" maxlength="240"></label>
+            <button type="submit">保存资料</button>
+          </form>
+          <div class="hint" style="margin:10px 0 4px">修改登录密码</div>
+          <form id="passwordForm">
+            <label class="field"><span>新密码（至少 10 位）</span><input id="newPassword" type="password" minlength="10" autocomplete="new-password" required></label>
+            <button type="submit" class="secondary">更新密码</button>
+          </form>
+          <div class="hint">纯用户名登录，不使用邮箱。请自行妥善保管密码。</div>
+        </section>
+        <section class="card">
+          <h2 style="font-size:16px;margin:0 0 8px">搜索用户</h2>
+          <div class="row"><input id="searchInput" class="grow" placeholder="输入至少 2 位用户名" style="padding:11px;border-radius:10px;border:1px solid var(--line);background:#0e121a;color:white;min-width:0"><button id="searchBtn">搜索</button></div>
+          <div id="searchResults" class="list"></div>
+        </section>
+        <section class="card">
+          <h2 style="font-size:16px;margin:0">好友申请 <span class="pill" id="requestCount">0</span></h2>
+          <div id="requests" class="list"><span class="muted hint">暂无申请</span></div>
+        </section>
+        <section class="card">
+          <h2 style="font-size:16px;margin:0">我的好友</h2>
+          <div id="friends" class="list"><span class="muted hint">正在加载…</span></div>
+        </section>
+      </aside>
+      <section class="card">
+        <div class="topline"><div><h2 id="chatTitle">选择一位好友开始聊天</h2><div class="muted hint" id="chatSub">消息会保存在云端</div></div></div>
+        <div id="messages" class="messages"><div class="muted" style="margin:auto">TRY · 连接你的朋友</div></div>
+        <form id="sendForm" class="sendrow"><input id="messageInput" placeholder="输入消息…" maxlength="5000" disabled><button id="sendBtn" disabled>发送</button></form>
+      </section>
+    </div>
+    <div id="appMsg" class="notice hidden"></div>
+  </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(() => {
+  // PWA: service worker only caches the app shell, never Supabase/API responses.
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(err => console.warn("TRY offline support:", err)));
+  }
+  let deferredInstallPrompt = null;
+  const installBtn = document.getElementById("installBtn");
+  window.addEventListener("beforeinstallprompt", event => {
+    event.preventDefault(); deferredInstallPrompt = event;
+    if (installBtn) installBtn.classList.remove("hidden");
+  });
+  if (installBtn) installBtn.addEventListener("click", async () => {
+    if (!deferredInstallPrompt) {
+      notice("authMsg", "如未出现安装窗口，请打开浏览器菜单，选择‘安装应用’或‘添加到主屏幕’。");
+      return;
+    }
+    deferredInstallPrompt.prompt();
+    await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = null;
+    installBtn.classList.add("hidden");
+  });
+  window.addEventListener("appinstalled", () => { if (installBtn) installBtn.classList.add("hidden"); });
+
+  const SUPABASE_URL = "https://jklokreghsjltbwiuwdg.supabase.co";
+  const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_TLc3CNL65J1H7txHWuHXmA_egvujpsQ";
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+    auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
+  });
+  const $ = id => document.getElementById(id);
+  let mode="login", me=null, profile=null, activeFriend=null, activeConversation=null, messageChannel=null, receiptChannel=null, messagePoller=null;
+  const internalEmail = u => `${u.trim().toLowerCase()}@users.try.invalid`;
+  const usernameOK = u => /^[a-z0-9_]{3,24}$/.test(u);
+  function notice(id,msg,type=""){const el=$(id);el.textContent=msg;el.className="notice"+(type?" "+type:"");el.classList.remove("hidden")}
+  function clearNotice(id){$(id).classList.add("hidden")}
+  function errText(e){return e?.message || String(e)}
+  function setMode(next){mode=next;$("loginTab").className=next==="login"?"active":"secondary";$("registerTab").className=next==="register"?"active":"secondary";$("displayField").classList.toggle("hidden",next!=="register");$("authSubmit").textContent=next==="login"?"登录":"创建账号";$("password").autocomplete=next==="login"?"current-password":"new-password";clearNotice("authMsg")}
+  $("loginTab").onclick=()=>setMode("login");$("registerTab").onclick=()=>setMode("register");
+  $("authForm").addEventListener("submit",async e=>{
+    e.preventDefault();clearNotice("authMsg");const username=$("username").value.trim().toLowerCase(),password=$("password").value;
+    if(!usernameOK(username))return notice("authMsg","用户名须为 3–24 位，只能包含英文字母、数字和下划线。","error");
+    if(password.length<10)return notice("authMsg","密码至少需要 10 位。","error");
+    $("authSubmit").disabled=true;
+    try{
+      if(mode==="register"){
+        const {data,error}=await db.auth.signUp({email:internalEmail(username),password,options:{data:{username,display_name:$("displayName").value.trim().slice(0,60)}}});
+        if(error)throw error;if(data.user&&!data.session)throw new Error("账号已创建，但没有自动登录。请检查 Supabase 是否已关闭 Confirm email。");
+        notice("authMsg","注册成功，正在进入 TRY…","ok");
+      }else{
+        const {error}=await db.auth.signInWithPassword({email:internalEmail(username),password});if(error)throw error;
+      }
+      await boot();
+    }catch(e){notice("authMsg",errText(e),"error")}finally{$("authSubmit").disabled=false}
+  });
+  $("logoutBtn").onclick=async()=>{await db.auth.signOut();me=null;profile=null;activeFriend=null;activeConversation=null;if(messagePoller){clearInterval(messagePoller);messagePoller=null}if(messageChannel)await db.removeChannel(messageChannel);messageChannel=null;if(receiptChannel)await db.removeChannel(receiptChannel);receiptChannel=null;$("appView").classList.add("hidden");$("authView").classList.remove("hidden")};
+  async function boot(){
+    const {data:{user},error}=await db.auth.getUser();if(error)throw error;if(!user)return;
+    me=user;const {data:p,error:pe}=await db.from("profiles").select("id,username,display_name,avatar_url,bio").eq("id",me.id).single();if(pe)throw pe;profile=p;
+    $("authView").classList.add("hidden");$("appView").classList.remove("hidden");$("welcome").textContent="你好，"+(p.display_name||p.username);$("myHandle").textContent="@"+p.username;
+    $("profileDisplayName").value=p.display_name||"";$("profileBio").value=p.bio||"";
+    const {error:deliveryError}=await db.rpc("mark_all_messages_delivered");if(deliveryError)console.warn("delivery receipts",deliveryError);
+    await Promise.all([loadFriends(),loadRequests()]);
+  }
+  async function loadFriends(){
+    const [{data,error},{data:unreads, error:unreadError}]=await Promise.all([db.rpc("get_friends"),db.rpc("get_unread_counts")]);
+    if(error)throw error;if(unreadError)console.warn("unread counts",unreadError);
+    const counts=new Map((unreads||[]).map(x=>[x.peer_id,Number(x.unread_count)]));const host=$("friends");host.innerHTML="";
+    if(!data?.length){host.innerHTML='<span class="muted hint">还没有好友。搜索用户名添加朋友吧。</span>';return}
+    data.forEach(f=>{const row=document.createElement("div");row.className="friendrow";const b=document.createElement("button");b.className="item"+(activeFriend?.user_id===f.user_id?" selected":"");const label=document.createElement("span");label.textContent=f.display_name||f.username;const handle=document.createElement("small");handle.textContent="@"+f.username;label.appendChild(handle);const right=document.createElement("span");right.textContent="›";const n=counts.get(f.user_id)||0;if(n){const badge=document.createElement("span");badge.className="unread";badge.textContent=n>99?"99+":String(n);right.appendChild(badge)}b.append(label,right);b.onclick=()=>openChat(f);row.appendChild(b);const rm=document.createElement("button");rm.className="secondary removeFriend";rm.textContent="删除";rm.title="删除好友（保留聊天记录）";rm.onclick=async()=>{if(!confirm("确定删除好友 @"+f.username+" 吗？聊天记录会保留。"))return;try{const {error}=await db.rpc("remove_friend",{p_other_user_id:f.user_id});if(error)throw error;if(activeFriend?.user_id===f.user_id){activeFriend=null;activeConversation=null;$("chatTitle").textContent="选择一位好友开始聊天";$("chatSub").textContent="好友已删除，聊天记录保留";$("messages").innerHTML="";$("messageInput").disabled=true;$("sendBtn").disabled=true}await loadFriends();notice("appMsg","已删除好友，聊天记录仍保留。","ok")}catch(e){notice("appMsg",errText(e),"error")}};row.appendChild(rm);host.appendChild(row)})
+  }
+  async function loadRequests(){
+    const {data,error}=await db.rpc("get_pending_friend_requests");if(error)throw new Error("好友申请资料读取失败。请先在 Supabase SQL Editor 执行配套的 SQL 文件。原始错误："+errText(error));
+    $("requestCount").textContent=String(data.length);const host=$("requests");host.innerHTML="";
+    if(!data.length){host.innerHTML='<span class="muted hint">暂无申请</span>';return}
+    data.forEach(r=>{const box=document.createElement("div");box.className="item";box.style.display="block";const who=document.createElement("div");who.style.fontSize="13px";who.textContent=(r.display_name||r.username||"TRY 用户");const handle=document.createElement("small");handle.textContent="@"+(r.username||"未知用户名");who.appendChild(handle);box.appendChild(who);const actions=document.createElement("div");actions.className="row";actions.style.marginTop="8px";actions.innerHTML='<button data-accept>接受</button><button class="secondary" data-decline>拒绝</button>';box.appendChild(actions);actions.querySelector("[data-accept]").onclick=async()=>{try{const {error}=await db.rpc("accept_friend_request",{p_request_id:r.request_id});if(error)throw error;await loadRequests();await loadFriends();notice("appMsg","已接受 @"+r.username+" 的好友申请。","ok")}catch(e){notice("appMsg",errText(e),"error")}};actions.querySelector("[data-decline]").onclick=async()=>{try{const {error}=await db.rpc("decline_friend_request",{p_request_id:r.request_id});if(error)throw error;await loadRequests()}catch(e){notice("appMsg",errText(e),"error")}};host.appendChild(box)})
+  }
+  $("searchBtn").onclick=searchUsers;$("searchInput").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();searchUsers()}});
+  async function searchUsers(){
+    const q=$("searchInput").value.trim();if(q.length<2)return notice("appMsg","请输入至少 2 位用户名。","error");
+    try{const {data,error}=await db.rpc("search_profiles",{p_query:q,p_limit:20});if(error)throw error;const host=$("searchResults");host.innerHTML="";
+      if(!data.length){host.innerHTML='<span class="muted hint">没有找到用户</span>';return}
+      data.forEach(u=>{const b=document.createElement("button");b.className="item";b.innerHTML=`<span>${escapeHTML(u.display_name||u.username)}<small>@${escapeHTML(u.username)}</small></span><span>＋</span>`;b.onclick=async()=>{try{const {error}=await db.rpc("send_friend_request",{p_recipient_id:u.user_id});if(error)throw error;notice("appMsg","好友申请已发送给 @"+u.username,"ok")}catch(e){notice("appMsg",errText(e),"error")}};host.appendChild(b)})
+    }catch(e){notice("appMsg",errText(e),"error")}
+  }
+  async function openChat(friend){
+    try{
+      activeFriend=friend;await loadFriends();$("chatTitle").textContent=friend.display_name||friend.username;$("chatSub").textContent="@"+friend.username;$("messages").innerHTML="";$("messageInput").disabled=false;$("sendBtn").disabled=false;
+      const {data:cid,error}=await db.rpc("get_or_create_direct_conversation",{p_other_user_id:friend.user_id});if(error)throw error;activeConversation=cid;
+      if(messagePoller){clearInterval(messagePoller);messagePoller=null}
+      if(messageChannel){await db.removeChannel(messageChannel);messageChannel=null}
+      if(receiptChannel){await db.removeChannel(receiptChannel);receiptChannel=null}
+      await loadMessages();
+      await markActiveConversationRead();
+      messageChannel=db.channel("try-messages-"+cid)
+        .on("postgres_changes",{event:"INSERT",schema:"public",table:"messages",filter:"conversation_id=eq."+cid},payload=>{const added=appendMessage(payload.new);if(added&&payload.new.sender_id!==me.id)markActiveConversationRead().catch(e=>console.warn(e))})
+        .on("postgres_changes",{event:"DELETE",schema:"public",table:"messages"},()=>{if(activeConversation===cid)loadMessages().catch(e=>console.warn(e))})
+        .subscribe(status=>{if(status==="CHANNEL_ERROR"||status==="TIMED_OUT")notice("appMsg","实时连接暂时中断，正在自动尝试同步消息。","error")});
+      receiptChannel=db.channel("try-receipts-"+cid).on("postgres_changes",{event:"*",schema:"public",table:"message_receipts",filter:"recipient_id=eq."+friend.user_id},()=>refreshOutgoingReceipts()).subscribe();
+      // Realtime is primary; periodic sync is a fallback so messages still appear if a
+      // mobile browser suspends the realtime socket or the subscription reconnects.
+      messagePoller=setInterval(()=>{if(activeConversation===cid)syncRecentMessages(cid)},2500);
+    }catch(e){notice("appMsg",errText(e),"error")}
+  }
+  async function loadMessages(){
+    const {data,error}=await db.from("messages").select("id,sender_id,body,created_at").eq("conversation_id",activeConversation).order("created_at",{ascending:true}).limit(200);if(error)throw error;$("messages").innerHTML="";data.forEach(appendMessage);scrollMessages();await refreshOutgoingReceipts()
+  }
+  async function markActiveConversationRead(){if(!activeConversation||document.visibilityState!=="visible")return;const cid=activeConversation;const {error}=await db.rpc("mark_conversation_read",{p_conversation_id:cid});if(error)throw error;await loadFriends();await refreshOutgoingReceipts()}
+  async function syncRecentMessages(cid){
+    try{const {data,error}=await db.from("messages").select("id,sender_id,body,created_at").eq("conversation_id",cid).order("created_at",{ascending:true}).limit(200);if(error)throw error;if(activeConversation!==cid)return;const live=new Set(data.map(m=>m.id));document.querySelectorAll("#messages .bubble[data-mid]").forEach(el=>{if(!live.has(el.dataset.mid))el.remove()});let incoming=false;data.forEach(m=>{if(appendMessage(m)&&m.sender_id!==me.id)incoming=true});if(incoming&&document.visibilityState==="visible")await markActiveConversationRead();}catch(e){console.warn("TRY message sync:",e)}
+  }
+  async function refreshOutgoingReceipts(){
+    if(!activeFriend)return;const ids=[...document.querySelectorAll(".bubble.mine")].map(x=>x.dataset.mid);if(!ids.length)return;
+    const {data,error}=await db.from("message_receipts").select("message_id,delivered_at,read_at").eq("recipient_id",activeFriend.user_id).in("message_id",ids);if(error){console.warn("TRY receipts:",error);return}
+    const map=new Map((data||[]).map(x=>[x.message_id,x]));ids.forEach(id=>{const el=document.querySelector(`[data-mid="${CSS.escape(id)}"] .receipt`);if(el){const r=map.get(id);el.textContent=r?.read_at?"已读":r?.delivered_at?"已送达":"已发送"}})
+  }
+  function appendMessage(m){if(document.querySelector(`[data-mid="${CSS.escape(m.id)}"]`))return false;const div=document.createElement("div");div.className="bubble"+(m.sender_id===me.id?" mine":"");div.dataset.mid=m.id;const body=document.createElement("div");body.textContent=m.body;const time=document.createElement("time");time.textContent=new Date(m.created_at).toLocaleString();div.append(body,time);if(m.sender_id===me.id){const receipt=document.createElement("span");receipt.className="receipt";receipt.textContent="已发送";const recall=document.createElement("button");recall.type="button";recall.className="recall";recall.textContent="撤回";recall.onclick=async()=>{if(!confirm("确定撤回这条消息吗？撤回后会从云端删除，双方都无法再看到。"))return;recall.disabled=true;try{const {error}=await db.rpc("delete_own_message",{p_message_id:m.id});if(error)throw error;div.remove();notice("appMsg","消息已从云端撤回。","ok")}catch(e){recall.disabled=false;notice("appMsg",errText(e),"error")}};div.append(receipt,recall)}$("messages").appendChild(div);scrollMessages();return true}
+  function scrollMessages(){$("messages").scrollTop=$("messages").scrollHeight}
+  $("sendForm").addEventListener("submit",async e=>{e.preventDefault();const body=$("messageInput").value.trim();if(!body||!activeConversation)return;const btn=$("sendBtn");btn.disabled=true;try{const {data,error}=await db.from("messages").insert({conversation_id:activeConversation,sender_id:me.id,body}).select("id,sender_id,body,created_at").single();if(error)throw error;appendMessage(data);$("messageInput").value="";await refreshOutgoingReceipts()}catch(e){notice("appMsg",errText(e),"error")}finally{btn.disabled=false}});
+  $("profileForm").addEventListener("submit",async e=>{e.preventDefault();const display_name=$("profileDisplayName").value.trim().slice(0,60),bio=$("profileBio").value.trim().slice(0,240);try{const {error}=await db.from("profiles").update({display_name,bio}).eq("id",me.id);if(error)throw error;profile={...profile,display_name,bio};$("welcome").textContent="你好，"+(display_name||profile.username);notice("appMsg","个人资料已保存。","ok")}catch(e){notice("appMsg",errText(e),"error")}});
+  $("passwordForm").addEventListener("submit",async e=>{e.preventDefault();const password=$("newPassword").value;if(password.length<10)return notice("appMsg","新密码至少需要 10 位。","error");try{const {error}=await db.auth.updateUser({password});if(error)throw error;$("newPassword").value="";notice("appMsg","密码已更新。请妥善保管新密码。","ok")}catch(e){notice("appMsg",errText(e),"error")}});
+  document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&activeConversation)markActiveConversationRead().catch(e=>console.warn(e))});
+  setInterval(()=>{if(me){loadFriends().catch(e=>console.warn("friend refresh",e));db.rpc("mark_all_messages_delivered").then(({error})=>{if(error)console.warn(error)})}},15000);
+  function escapeHTML(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+  db.auth.onAuthStateChange((event,session)=>{if(event==="SIGNED_IN"&&session&&!me)boot().catch(e=>notice("appMsg",errText(e),"error"))});
+  boot().catch(e=>notice("authMsg",errText(e),"error"));
+})();
+</script>
+</body>
+</html>
