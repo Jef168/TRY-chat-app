@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "app.netlify.famous_torte_c98d97.twa",
+      "sha256_cert_fingerprints": [
+        "87:96:9E:E3:F1:E1:E1:46:30:27:65:18:70:0A:1B:05:E0:78:1B:44:05:14:34:A7:19:D5:18:2C:6D:30:27:01"
+      ]
+    }
+  }
+]
